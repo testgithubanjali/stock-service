@@ -23,5 +23,5 @@ func main() {
 		handler.GetCandles,
 	)
 
-	router.Run(":8080")
+	router.Run(":8081")
 }

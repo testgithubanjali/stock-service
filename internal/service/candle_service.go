@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"sort"
 	"stock-service/internal/model"
 	"stock-service/internal/repository"
 	"time"
@@ -28,13 +29,17 @@ func AggregateCandles(
 		return nil, errors.New("no data found")
 	}
 
+	// Aggregate only once
+	agg := Aggregate(candles, timeframe)
+
 	return &model.CandleResponse{
 		Symbol:    symbol,
 		Timeframe: timeframe,
-		Candles:   Aggregate(candles, timeframe),
-		Count:     len(Aggregate(candles, timeframe)),
+		Candles:   agg,
+		Count:     len(agg),
 	}, nil
 }
+
 func getDuration(tf string) time.Duration {
 
 	switch tf {
@@ -60,6 +65,7 @@ func getDuration(tf string) time.Duration {
 
 	return time.Minute
 }
+
 func Aggregate(
 	candles []model.Candle,
 	tf string,
@@ -117,6 +123,11 @@ func Aggregate(
 			},
 		)
 	}
+
+	// Sort candles by datetime
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].DateTime.Before(result[j].DateTime)
+	})
 
 	return result
 }
